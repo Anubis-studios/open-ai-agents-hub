@@ -145,8 +145,50 @@ const EditAgent = ({ useUser, usedIn }) => {
     toast.success("Chat link copied to clipboard!");
   };
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounterRef = useRef(0);
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current += 1;
+    if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current <= 0) {
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current = 0;
+    setIsDragging(false);
+    handleFileUpload(e);
+  };
+
+  const handleFileUpload = async (eOrFiles) => {
+    let file = null;
+    if (Array.isArray(eOrFiles)) {
+      file = eOrFiles[0];
+    } else if (eOrFiles?.dataTransfer?.files && eOrFiles.dataTransfer.files.length > 0) {
+      file = eOrFiles.dataTransfer.files[0];
+    } else {
+      file = eOrFiles?.target?.files?.[0];
+    }
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -853,21 +895,36 @@ const EditAgent = ({ useUser, usedIn }) => {
             </div>
             
             <div className="p-8 grid grid-cols-1 gap-4">
-              <button
+              <div
                 onClick={() => {
                   setShowIconSelectionModal(false);
                   fileInputRef.current?.click();
                 }}
-                className="group flex flex-col items-center gap-4 p-8 bg-gray-50 dark:bg-primary-bg rounded-[2rem] border border-gray-100 dark:border-divider hover:border-blue-500/50 hover:bg-white dark:hover:bg-secondary-bg transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 active:scale-[0.98]"
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={(e) => {
+                  setShowIconSelectionModal(false);
+                  handleDrop(e);
+                }}
+                role="button"
+                tabIndex={0}
+                className={`group flex flex-col items-center gap-4 p-8 rounded-[2rem] border transition-all duration-300 active:scale-[0.98] cursor-pointer ${
+                  isDragging
+                    ? "border-2 border-dashed border-blue-500 bg-blue-50 dark:bg-blue-500/10"
+                    : "bg-gray-50 dark:bg-primary-bg border-gray-100 dark:border-divider hover:border-blue-500/50 hover:bg-white dark:hover:bg-secondary-bg hover:shadow-xl hover:shadow-blue-500/5"
+                }`}
               >
                 <div className="w-16 h-16 rounded-2xl bg-white dark:bg-secondary-bg shadow-sm flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors duration-300">
                   <IoImageOutline className="w-8 h-8" />
                 </div>
                 <div className="text-center">
                   <h4 className="font-bold text-gray-900 dark:text-white text-lg">Upload Photo</h4>
-                  <p className="text-sm text-gray-500 dark:text-secondary-text mt-1">Pick a file from your device</p>
+                  <p className="text-sm text-gray-500 dark:text-secondary-text mt-1">
+                    {isDragging ? "Drop file to upload" : "Pick a file, or drag and drop"}
+                  </p>
                 </div>
-              </button>
+              </div>
 
               <button
                 onClick={() => {
