@@ -1,1 +1,3 @@
-from . import agent_proxy
+from .agent_proxy import router
+
+__all__ = ["router"]

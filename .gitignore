@@ -1,1 +1,37 @@
-node_modules
+```
+# Dependencies
+server/venv/
+server/.venv/
+server/__pycache__/
+server/.mypy_cache/
+server/.pytest_cache/
+
+# Environment
+server/.env
+server/.env.local
+server/*.env.*
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+```
+# Environment files (keep example)
+.env
+!.env.example
+client/.env.local
+client/.env.production
+
+# Docker build artifacts
+.next/
+node_modules/
+__pycache__/
+*.pyc

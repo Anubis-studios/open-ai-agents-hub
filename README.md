@@ -1,93 +1,230 @@
-# Open AI Agents Hub
+# Vibe-Agents
 
-Open-source platform for building, browsing, and chatting with AI agents — both LLM chat agents and media generation agents (image, video, audio) — in a single web interface.
+A modern, production-ready full-stack application for AI agent management and visualization.
 
-Instead of writing custom integration code for every model provider, Open AI Agents Hub gives you an agent library (your own agents, template agents, and featured agents), a chat/generation interface per agent, and a proxy backend so you can run the whole thing on your own infrastructure with your own API key.
+## 🚀 Quick Start
 
-<p align="center">
-  <a href="https://github.com/Anil-matcha/awesome-generative-ai-apps">
-    <img src="https://img.shields.io/badge/Part%20of-Awesome%20Generative%20AI%20Apps-FFD700?style=for-the-badge&logo=github&logoColor=black" alt="Awesome Generative AI Apps">
-  </a>
-</p>
+### Prerequisites
+- Docker (20.10+)
+- Docker Compose (2.0+)
+- OR Node.js 18+ and Python 3.9+ for manual deployment
 
-> 🎨 **[Explore 50+ more open-source AI apps →](https://github.com/Anil-matcha/awesome-generative-ai-apps)**
-
-## Why agents, not just chat
-
-Most "chat with AI" tools stop at text. An **agent** here is a reusable, shareable unit that bundles:
-
-- a system prompt / persona
-- a target capability — chat, image generation, video generation, or audio generation
-- its own profile page, slug, and conversation history
-
-That means the same interface handles a customer-support chatbot agent and a "turn my photo into anime" image-generation agent, side by side in one library — you're not bolting media generation on as an afterthought.
-
-## Features
-
-- **Agent library** — browse your own agents, ready-made template agents, and featured agents from one screen.
-- **Agent builder** — create and edit agents visually (the client uses React Flow for the agent creation/edit canvas) with custom prompts, skills, and profile pages.
-- **Chat agents** — multi-turn conversations per agent, with full conversation history stored per agent + conversation ID.
-- **Media generation agents** — agents whose "reply" is a generated image, video, or audio clip instead of text.
-- **Suggested agents** — an endpoint that recommends agents based on what you're trying to do.
-- **Like / profile pages** — each agent has a public-style profile (`/agents/{slug}/profile`) so agents can be discovered and shared inside your instance.
-- **Bring your own key** — the backend is a thin FastAPI proxy; you supply the credentials for whichever model/agent provider backs it, so there's no vendor lock-in baked into the UI.
-- **Self-hosted** — Next.js frontend + FastAPI backend, run both locally or deploy anywhere that runs Node and Python.
-
-## Architecture
-
-```
-client/   Next.js 16 (React 19) app — agent library, agent builder (React Flow), chat + profile pages
-server/   FastAPI backend — proxies agent CRUD, chat, and generation requests to your configured provider
-packages/agents/  Shared React component library used by the client (agent cards, theming, create/edit UI)
-```
-
-The backend (`server/app/routers/agent_proxy.py`) exposes REST endpoints for:
-
-- `GET /api/agents/user/agents`, `/agents/templates/agents`, `/agents/featured/agents` — agent library
-- `POST /api/agents` — create an agent
-- `GET/PUT /api/agents/by-slug/{slug}` — read/update an agent
-- `POST /api/agents/by-slug/{slug}/chat` — chat or generate with an agent
-- `POST /api/agents/by-slug/{slug}/like` — like an agent
-- `POST /api/agents/suggest` — get suggested agents
-- `GET /api/agents/skills` — list available agent skills
-
-These all proxy through to a configurable base URL, so you can point the backend at whichever agent/model provider you want to power generation and chat.
-
-## Tech stack
-
-- **Frontend:** Next.js 16, React 19, Tailwind CSS 4, React Flow
-- **Backend:** FastAPI, SQLAlchemy, asyncpg, httpx
-- **Monorepo:** npm workspaces (`client`, `server`, `packages/agents`)
-
-## Status
-
-Early work in progress. Contributions welcome — see the routers and client `agents/` pages for the current surface area.
-
-## Quick start
-
-**Backend**
+### Option 1: Docker Deployment (Recommended for Local Development)
 ```bash
+./deploy.sh
+```
+
+That's it! Your application will be running at:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+
+### Option 2: Vercel Deployment (Recommended for Production)
+```bash
+# Deploy frontend to Vercel
+./deploy-vercel.sh
+
+# Deploy backend to Railway/Render (see VERCEL_DEPLOYMENT.md)
+```
+
+Your application will be running at:
+- **Frontend**: https://your-app.vercel.app
+- **Backend API**: https://your-api.railway.app
+
+## 📋 Table of Contents
+
+- [Features](#features)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Deployment Options](#deployment-options)
+- [Development](#development)
+- [Configuration](#configuration)
+- [Documentation](#documentation)
+
+## ✨ Features
+
+### Backend (FastAPI)
+- 🔒 Environment-based configuration with Pydantic validation
+- 🛡️ CORS protection with configurable origins
+- ⏱️ Configurable request timeouts
+- 📊 Structured JSON logging
+- 🏥 Health check endpoints
+- 📚 Auto-generated API documentation (Swagger/OpenAPI)
+
+### Frontend (Next.js 16 + React 19)
+- ⚡ Server-side rendering for optimal performance
+- 🎨 Modern UI with Tailwind CSS v4
+- 🔄 Real-time data fetching with loading states
+- 📱 Responsive design
+- 🎯 Error handling and user feedback
+
+### DevOps
+- 🐳 Docker containerization for both services
+- 🔄 Docker Compose orchestration
+- 🏥 Built-in health checks
+- 📝 Comprehensive deployment scripts
+- ☁️ Cloud-ready (AWS, GCP, Heroku)
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌──────────────────┐
+│   Next.js 16    │────▶│   FastAPI 0.109  │
+│   Frontend      │     │   Backend        │
+│   Port: 3000    │     │   Port: 8000     │
+└─────────────────┘     └──────────────────┘
+```
+
+## 🛠️ Development
+
+See [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed setup instructions.
+
+### Quick Development Setup
+
+```bash
+# Backend
 cd server
 pip install -r requirements.txt
-cp .env .env.local   # set MUAPI_BASE_URL and your API key
 uvicorn app.main:app --reload
-```
 
-**Frontend**
-```bash
+# Frontend (in another terminal)
 cd client
 npm install
 npm run dev
 ```
 
-Then open http://localhost:3000. The API runs on port 8000 by default; the client is configured to talk to it via CORS.
+## 🚢 Deployment Options
 
-## Related Projects
+### Option 1: Docker Compose (Local Development)
 
-- [MuAPI](https://muapi.ai) — Unified API for image, video, and audio generation across hundreds of AI models. Explore [AI agents](https://muapi.ai/agents) and the [model playground](https://muapi.ai/playground).
-- [Open-Pomelli](https://github.com/SamurAIGPT/Open-Pomelli) — Open-source Pomelli alternative — self-hosted AI marketing assistant
-- [open-character-ai](https://github.com/Anil-matcha/open-character-ai) — Open-source Character.AI alternative with custom AI personas
+```bash
+# Configure environment
+cp .env.example .env
+nano .env  # Edit with your values
 
-## License
+# Deploy
+./deploy.sh
 
-MIT
+# View status
+./deploy.sh status
+
+# View logs
+./deploy.sh logs
+
+# Stop
+./deploy.sh stop
+```
+
+### Option 2: Vercel + Railway/Render (Production)
+
+**Frontend on Vercel:**
+```bash
+./deploy-vercel.sh
+```
+
+**Backend on Railway (recommended):**
+```bash
+cd server
+railway login
+railway init
+railway up
+```
+
+See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for:
+- Complete Vercel deployment guide
+- Backend deployment options
+- Environment configuration
+- CORS setup
+- Troubleshooting
+
+### Option 3: Manual Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for:
+- Manual deployment steps
+- Cloud platform guides (AWS, GCP, Heroku)
+- Production checklist
+- Monitoring & maintenance
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# Backend
+ENVIRONMENT=production
+API_URL=http://localhost:8000
+ALLOWED_ORIGINS=http://localhost:3000
+REQUEST_TIMEOUT=30
+LOG_LEVEL=info
+
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+See `.env.example` for all available options.
+
+## 📚 Documentation
+
+- **[VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)** - Vercel deployment guide (NEW!)
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment guide
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Development setup and workflows
+- **[CHANGELOG.md](./CHANGELOG.md)** - Version history and changes
+- **[IMPROVEMENTS_SUMMARY.md](./IMPROVEMENTS_SUMMARY.md)** - Recent improvements
+
+## 🧪 Testing
+
+```bash
+# Backend tests
+cd server
+pytest
+
+# Frontend tests
+cd client
+npm test
+```
+
+## 📊 Monitoring
+
+### Health Checks
+- Backend: `GET http://localhost:8000/health`
+- Frontend: `GET http://localhost:3000/`
+
+### Logs
+```bash
+docker-compose logs -f backend
+docker-compose logs -f frontend
+```
+
+## 🔒 Security
+
+- ✅ Environment variables for sensitive configuration
+- ✅ CORS protection
+- ✅ Input validation with Pydantic
+- ✅ Non-root Docker containers
+- ✅ Health checks for service monitoring
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+- Check [DEPLOYMENT.md](./DEPLOYMENT.md) for troubleshooting
+- Review logs: `./deploy.sh logs`
+- Open an issue on GitHub
+
+---
+
+**Ready to deploy?** 
+- For local development: Run `./deploy.sh` 🐳
+- For production: Run `./deploy-vercel.sh` and deploy backend to Railway ☁️
